@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Wala - Play Business Simulation Game Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Main Container */
+        .game-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            width: 280px;
+            background: #16213e;
+            border-right: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+
+        .logo {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo span {
+            color: #e94560;
+        }
+
+        .players-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .players-list h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #1e2a47;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .player-item.active {
+            border-color: #e94560;
+            background: #2a3a5e;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .player-avatar.red { background: #e94560; }
+        .player-avatar.blue { background: #4361ee; }
+        .player-avatar.green { background: #2a9d8f; }
+        .player-avatar.yellow { background: #f8961e; }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .player-money {
+            font-size: 13px;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .player-properties {
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* Main Game Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f3460;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Game Header */
+        .game-header {
+            padding: 15px 30px;
+            background: #16213e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .room-code {
+            background: #1e2a47;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .room-code:hover {
+            background: #2a3a5e;
+        }
+
+        .room-code i {
+            margin-right: 8px;
+            color: #e94560;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .stat i {
+            color: #e94560;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: #1e2a47;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: #2a3a5e;
+        }
+
+        .header-btn.danger:hover {
+            background: #e94560;
+        }
+
+        /* Game Board */
+        .board-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 2px;
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 1.8;
+            background: #16213e;
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .cell {
+            background: #1e2a47;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            text-align: center;
+            padding: 5px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cell:hover {
+            background: #2a3a5e;
+            transform: scale(1.02);
+        }
+
+        .cell.corner {
+            background: #e94560;
+            font-weight: 600;
+        }
+
+        .cell .icon {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .cell .name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .cell .price {
+            color: #4ade80;
+            font-size: 9px;
+        }
+
+        .property-color {
+            width: 100%;
+            height: 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .cell .owner-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+        }
+
+        .cell .players-on {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .player-token {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid white;
+        }
+
+        .player-token.red { background: #e94560; }
+        .player-token.blue { background: #4361ee; }
+        .player-token.green { background: #2a9d8f; }
+        .player-token.yellow { background: #f8961e; }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            width: 320px;
+            background: #16213e;
+            border-left: 1px solid #0f3460;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dice Section */
+        .dice-section {
+            padding: 20px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a2e;
+            box-shadow: 0 5px 0 #0f3460;
+        }
+
+        .dice.rolling {
+            animation: roll 0.2s linear infinite;
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .game-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .game-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #1e2a47;
+            color: white;
+        }
+
+        .game-btn.primary {
+            background: #e94560;
+        }
+
+        .game-btn.primary:hover:not(:disabled) {
+            background: #d13d55;
+            transform: translateY(-2px);
+        }
+
+        .game-btn:hover:not(:disabled) {
+            background: #2a3a5e;
+            transform: translateY(-2px);
+        }
+
+        .game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Property Info */
+        .property-info {
+            flex: 1;
+            padding: 20px;
+            border-bottom: 1px solid #0f3460;
+            overflow-y: auto;
+        }
+
+        .property-info h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .current-property {
+            background: #1e2a47;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .prop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .prop-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .prop-group {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .prop-price {
+            font-size: 24px;
+            color: #4ade80;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .prop-owner {
+            margin: 10px 0;
+            padding: 10px;
+            background: #16213e;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .rent-table {
+            margin-top: 15px;
+        }
+
+        .rent-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #0f3460;
+            font-size: 13px;
+        }
+
+        .prop-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .prop-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prop-btn.buy {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+
+        .prop-btn.sell {
+            background: #f8961e;
+            color: #1a1a2e;
+        }
+
+        .prop-btn.mortgage {
+            background: #888;
+            color: white;
+        }
+
+        /* Action Log */
+        .action-log {
+            padding: 20px;
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        .action-log h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .log-entry {
+            font-size: 12px;
+            padding: 8px;
+            border-bottom: 1px solid #0f3460;
+            color: #ccc;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #16213e;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #0f3460;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: #e94560;
+        }
+
+        /* Start Screen */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .start-card {
+            background: #16213e;
+            border-radius: 30px;
+            padding: 50px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid #0f3460;
+        }
+
+        .start-card h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .start-card h1 span {
+            color: #e94560;
+        }
+
+        .start-card p {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .start-input {
+            width: 100%;
+            padding: 15px;
+            background: #1e2a47;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            background: #e94560;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .start-btn:hover {
+            background: #d13d55;
+            transform: translateY(-2px);
+        }
+
+        .start-btn.secondary {
+            background: #1e2a47;
+        }
+
+        .start-btn.secondary:hover {
+            background: #2a3a5e;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .left-sidebar { width: 240px; }
+            .right-sidebar { width: 280px; }
+        }
+
+        @media (max-width: 992px) {
+            .game-container { flex-direction: column; }
+            .left-sidebar, .right-sidebar { width: 100%; height: auto; }
+            .board { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-card">
+            <h1>Business<span>Wala</span></h1>
+            <p>The ultimate business simulation game</p>
+            <input type="text" class="start-input" id="playerName" placeholder="Your name" value="Player 1">
+            <button class="start-btn" onclick="createGame()">
+                <i class="fas fa-plus"></i> Create New Game
+            </button>
+            <button class="start-btn secondary" onclick="showJoinGame()">
+                <i class="fas fa-door-open"></i> Join Game
+            </button>
+            <div id="joinGameDiv" style="display: none; margin-top: 20px;">
+                <input type="text" class="start-input" id="roomCode" placeholder="Enter room code">
+                <button class="start-btn" onclick="joinGame()">Join</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <div class="logo">
+                <h1>Business<span>Wala</span></h1>
+            </div>
+            
+            <div class="players-list">
+                <h3><i class="fas fa-users"></i> PLAYERS (4/4)</h3>
+                <div id="playersList"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="main-area">
+            <div class="game-header">
+                <div class="room-info">
+                    <div class="room-code" onclick="copyRoomCode()">
+                        <i class="fas fa-copy"></i> <span id="roomCodeDisplay">BW-1234</span>
+                    </div>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <i class="fas fa-clock"></i>
+                            <span id="turnIndicator">Player 1's turn</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-chart-line"></i>
+                            <span id="roundCounter">Round 1</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <button class="header-btn" onclick="openTradeModal()">
+                        <i class="fas fa-exchange-alt"></i> Trade
+                    </button>
+                    <button class="header-btn danger" onclick="leaveGame()">
+                        <i class="fas fa-sign-out-alt"></i> Leave
+                    </button>
+                </div>
+            </div>
+
+            <div class="board-container">
+                <div class="board" id="board"></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="dice-section">
+                <div class="dice-container">
+                    <div class="dice" id="dice1">1</div>
+                    <div class="dice" id="dice2">1</div>
+                </div>
+                <div class="game-buttons">
+                    <button class="game-btn primary" id="rollBtn" onclick="rollDice()">
+                        <i class="fas fa-dice"></i> Roll Dice
+                    </button>
+                    <button class="game-btn" id="endTurnBtn" onclick="endTurn()" disabled>
+                        <i class="fas fa-check"></i> End Turn
+                    </button>
+                </div>
+            </div>
+
+            <div class="property-info">
+                <h3><i class="fas fa-building"></i> PROPERTY INFO</h3>
+                <div id="propertyInfo" class="current-property">
+                    <div style="text-align: center; color: #888;">
+                        Click on a property to view details
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-log" id="actionLog">
+                <h3><i class="fas fa-history"></i> GAME LOG</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Modal -->
+    <div class="modal" id="tradeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Trade</h2>
+                <button class="modal-close" onclick="closeTradeModal()">&times;</button>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <select id="tradeWithPlayer" class="start-input">
+                    <option value="">Select player to trade with</option>
+                </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <h4>Your Properties</h4>
+                    <div id="yourTradeProps" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+                <div>
+                    <h4>Their Properties</h4>
+                    <div id="theirTradeProps" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label>Cash Offer:</label>
+                <input type="number" id="cashOffer" class="start-input" placeholder="Enter amount">
+            </div>
+            <button class="start-btn" onclick="sendTradeOffer()">Send Offer</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State - Exactly like Richup.io
+        let gameState = {
+            roomCode: 'BW-' + Math.floor(1000 + Math.random() * 9000),
+            currentPlayer: 0,
+            round: 1,
+            diceRolled: false,
+            dice: [1, 1],
+            players: [
+                { id: 0, name: 'Player 1', money: 1500, position: 0, properties: [], color: 'red', inJail: false },
+                { id: 1, name: 'Player 2', money: 1500, position: 0, properties: [], color: 'blue', inJail: false },
+                { id: 2, name: 'Player 3', money: 1500, position: 0, properties: [], color: 'green', inJail: false },
+                { id: 3, name: 'Player 4', money: 1500, position: 0, properties: [], color: 'yellow', inJail: false }
+            ],
+            properties: [],
+            actionLog: []
+        };
+
+        // Property Data - Exact Monopoly style like Richup.io
+        const propertyData = [
+            // Top row (left to right)
+            { id: 0, name: 'GO', type: 'corner', icon: 'fa-flag-checkered' },
+            { id: 1, name: 'Mediterranean Ave', price: 60, group: 1, rent: [2, 10, 30, 90, 160, 250], color: '#8B4513' },
+            { id: 2, name: 'Community Chest', type: 'chest', icon: 'fa-question-circle' },
+            { id: 3, name: 'Baltic Ave', price: 60, group: 1, rent: [4, 20, 60, 180, 320, 450], color: '#8B4513' },
+            { id: 4, name: 'Income Tax', type: 'tax', icon: 'fa-coins' },
+            { id: 5, name: 'Reading Railroad', price: 200, type: 'railroad', rent: [25, 50, 100, 200], color: '#000000' },
+            { id: 6, name: 'Oriental Ave', price: 100, group: 2, rent: [6, 30, 90, 270, 400, 550], color: '#87CEEB' },
+            { id: 7, name: 'Chance', type: 'chance', icon: 'fa-random' },
+            { id: 8, name: 'Vermont Ave', price: 100, group: 2, rent: [6, 30, 90, 270, 400, 550], color: '#87CEEB' },
+            { id: 9, name: 'Connecticut Ave', price: 120, group: 2, rent: [8, 40, 100, 300, 450, 600], color: '#87CEEB' },
+            // Right column
+            { id: 10, name: 'Jail', type: 'jail', icon: 'fa-gavel' },
+            { id: 11, name: 'St. Charles Place', price: 140, group: 3, rent: [10, 50, 150, 450, 625, 750], color: '#FF69B4' },
+            { id: 12, name: 'Electric Company', price: 150, type: 'utility', rent: [4, 10], color: '#FFFF00' },
+            { id: 13, name: 'States Ave', price: 140, group: 3, rent: [10, 50, 150, 450, 625, 750], color: '#FF69B4' },
+            { id: 14, name: 'Virginia Ave', price: 160, group: 3, rent: [12, 60, 180, 500, 700, 900], color: '#FF69B4' },
+            { id: 15, name: 'Pennsylvania Railroad', price: 200, type: 'railroad', rent: [25, 50, 100, 200], color: '#000000' },
+            { id: 16, name: 'St. James Place', price: 180, group: 4, rent: [14, 70, 200, 550, 750, 950], color: '#FFA500' },
+            { id: 17, name: 'Community Chest', type: 'chest', icon: 'fa-question-circle' },
+            { id: 18, name: 'Tennessee Ave', price: 180, group: 4, rent: [14, 70, 200, 550, 750, 950], color: '#FFA500' },
+            { id: 19, name: 'New York Ave', price: 200, group: 4, rent: [16, 80, 220, 600, 800, 1000], color: '#FFA500' },
+            // Bottom row (right to left)
+            { id: 20, name: 'Free Parking', type: 'parking', icon: 'fa-parking' },
+            { id: 21, name: 'Kentucky Ave', price: 220, group: 5, rent: [18, 90, 250, 700, 875, 1050], color: '#FF0000' },
+            { id: 22, name: 'Chance', type: 'chance', icon: 'fa-random' },
+            { id: 23, name: 'Indiana Ave', price: 220, group: 5, rent: [18, 90, 250, 700, 875, 1050], color: '#FF0000' },
+            { id: 24, name: 'Illinois Ave', price: 240, group: 5, rent: [20, 100, 300, 750, 925, 1100], color: '#FF0000' },
+            { id: 25, name: 'B&O Railroad', price: 200, type: 'railroad', rent: [25, 50, 100, 200], color: '#000000' },
+            { id: 26, name: 'Atlantic Ave', price: 260, group: 6, rent: [22, 110, 330, 800, 975, 1150], color: '#00FF00' },
+            { id: 27, name: 'Ventnor Ave', price: 260, group: 6, rent: [22, 110, 330, 800, 975, 1150], color: '#00FF00' },
+            { id: 28, name: 'Water Works', price: 150, type: 'utility', rent: [4, 10], color: '#00FFFF' },
+            { id: 29, name: 'Marvin Gardens', price: 280, group: 6, rent: [24, 120, 360, 850, 1025, 1200], color: '#00FF00' },
+            // Left column
+            { id: 30, name: 'Go To Jail', type: 'gotojail', icon: 'fa-gavel' },
+            { id: 31, name: 'Pacific Ave', price: 300, group: 7, rent: [26, 130, 390, 900, 1100, 1275], color: '#0000FF' },
+            { id: 32, name: 'North Carolina Ave', price: 300, group: 7, rent: [26, 130, 390, 900, 1100, 1275], color: '#0000FF' },
+            { id: 33, name: 'Community Chest', type: 'chest', icon: 'fa-question-circle' },
+            { id: 34, name: 'Pennsylvania Ave', price: 320, group: 7, rent: [28, 150, 450, 1000, 1200, 1400], color: '#0000FF' },
+            { id: 35, name: 'Short Line Railroad', price: 200, type: 'railroad', rent: [25, 50, 100, 200], color: '#000000' },
+            { id: 36, name: 'Chance', type: 'chance', icon: 'fa-random' },
+            { id: 37, name: 'Park Place', price: 350, group: 8, rent: [35, 175, 500, 1100, 1300, 1500], color: '#800080' },
+            { id: 38, name: 'Luxury Tax', type: 'tax', icon: 'fa-coins' },
+            { id: 39, name: 'Boardwalk', price: 400, group: 8, rent: [50, 200, 600, 1400, 1700, 2000], color: '#800080' }
+        ];
+
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', () => {
+            initProperties();
+        });
+
+        function initProperties() {
+            propertyData.forEach((data, index) => {
+                gameState.properties.push({
+                    ...data,
+                    id: index,
+                    owner: null,
+                    houses: 0,
+                    mortgaged: false
+                });
+            });
+        }
+
+        // Start Screen Functions
+        function createGame() {
+            const playerName = document.getElementById('playerName').value || 'Player 1';
+            gameState.players[0].name = playerName;
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            
+            renderBoard();
+            renderPlayers();
+            updatePropertyInfo(null);
+            addToLog('Game started! Room code: ' + gameState.roomCode);
+            updateTurnDisplay();
+        }
+
+        function showJoinGame() {
+            document.getElementById('joinGameDiv').style.display = 'block';
+        }
+
+        function joinGame() {
+            const roomCode = document.getElementById('roomCode').value;
+            if (roomCode) {
+                gameState.roomCode = roomCode;
+                document.getElementById('roomCodeDisplay').textContent = roomCode;
+                createGame();
+            }
+        }
+
+        function copyRoomCode() {
+            navigator.clipboard.writeText(gameState.roomCode);
+            addToLog('Room code copied to clipboard!');
+        }
+
+        function leaveGame() {
+            if (confirm('Leave the game?')) {
+                location.reload();
+            }
+        }
+
+        // Board Rendering
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            gameState.properties.forEach((prop, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => showPropertyInfo(index);
+
+                if (prop.type === 'corner' || prop.type === 'jail' || prop.type === 'parking' || prop.type === 'gotojail') {
+                    cell.classList.add('corner');
+                    cell.innerHTML = `
+                        <i class="fas ${prop.icon} icon"></i>
+                        <div class="name">${prop.name}</div>
+                    `;
+                } else if (prop.type === 'chest' || prop.type === 'chance' || prop.type === 'tax') {
+                    cell.innerHTML = `
+                        <i class="fas ${prop.icon} icon"></i>
+                        <div class="name">${prop.name}</div>
+                    `;
+                } else {
+                    const colorStyle = prop.color ? `style="background: ${prop.color}"` : '';
+                    let ownerDot = '';
+                    if (prop.owner !== null) {
+                        const owner = gameState.players[prop.owner];
+                        ownerDot = `<div class="owner-dot ${owner.color}"></div>`;
+                    }
+
+                    // Players on property
+                    const playersOnProp = gameState.players.filter(p => p.position === index);
+                    let playersHtml = '';
+                    if (playersOnProp.length > 0) {
+                        playersHtml = '<div class="players-on">';
+                        playersOnProp.forEach(p => {
+                            playersHtml += `<div class="player-token ${p.color}"></div>`;
+                        });
+                        playersHtml += '</div>';
+                    }
+
+                    cell.innerHTML = `
+                        <div class="property-color" ${colorStyle}></div>
+                        ${ownerDot}
+                        <div class="name">${prop.name}</div>
+                        <div class="price">$${prop.price}</div>
+                        ${playersHtml}
+                    `;
+                }
+
+                board.appendChild(cell);
+            });
+        }
+
+        // Players List Rendering
+        function renderPlayers() {
+            const playersList = document.getElementById('playersList');
+            playersList.innerHTML = '';
+
+            gameState.players.forEach((player, index) => {
+                const playerEl = document.createElement('div');
+                playerEl.className = `player-item ${index === gameState.currentPlayer ? 'active' : ''}`;
+                playerEl.innerHTML = `
+                    <div class="player-avatar ${player.color}">${player.name.charAt(0)}</div>
+                    <div class="player-info">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-money">$${player.money}</div>
+                        <div class="player-properties">${player.properties.length} properties</div>
+                    </div>
+                `;
+                playersList.appendChild(playerEl);
+            });
+        }
+
+        // Dice Functions
+        function rollDice() {
+            if (gameState.diceRolled) return;
+
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            const rollBtn = document.getElementById('rollBtn');
+            const endTurnBtn = document.getElementById('endTurnBtn');
+
+            // Animation
+            dice1.classList.add('rolling');
+            dice2.classList.add('rolling');
+
+            setTimeout(() => {
+                dice1.classList.remove('rolling');
+                dice2.classList.remove('rolling');
+
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                
+                gameState.dice = [d1, d2];
+                dice1.textContent = d1;
+                dice2.textContent = d2;
+                
+                gameState.diceRolled = true;
+                rollBtn.disabled = true;
+                
+                movePlayer(gameState.currentPlayer, d1 + d2);
+
+                // Check for doubles
+                if (d1 === d2) {
+                    addToLog(`${gameState.players[gameState.currentPlayer].name} rolled doubles! Gets another turn`);
+                    gameState.diceRolled = false;
+                    rollBtn.disabled = false;
+                    endTurnBtn.disabled = true;
+                } else {
+                    endTurnBtn.disabled = false;
+                }
+
+                addToLog(`${gameState.players[gameState.currentPlayer].name} rolled ${d1} + ${d2} = ${d1 + d2}`);
+            }, 500);
+        }
+
+        function movePlayer(playerIndex, steps) {
+            const player = gameState.players[playerIndex];
+            const oldPos = player.position;
+            const newPos = (oldPos + steps) % gameState.properties.length;
+            
+            player.position = newPos;
+
+            // Passed GO
+            if (newPos < oldPos) {
+                player.money += 200;
+                addToLog(`${player.name} passed GO and collected $200`);
+            }
+
+            // Handle landing
+            const property = gameState.properties[newPos];
+            
+            if (property.type === 'tax') {
+                const tax = property.name === 'Income Tax' ? 200 : 100;
+                player.money -= tax;
+                addToLog(`${player.name} paid $${tax} tax`);
+            } else if (property.type === 'gotojail') {
+                player.position = 10; // Jail position
+                player.inJail = true;
+                addToLog(`${player.name} goes to jail!`);
+            } else if (property.owner !== null && property.owner !== playerIndex) {
+                // Pay rent
+                const owner = gameState.players[property.owner];
+                const rent = calculateRent(property);
+                
+                if (player.money >= rent) {
+                    player.money -= rent;
+                    owner.money += rent;
+                    addToLog(`${player.name} paid $${rent} rent to ${owner.name}`);
+                } else {
+                    // Bankruptcy
+                    handleBankruptcy(playerIndex, property.owner);
+                }
+            }
+
+            renderBoard();
+            renderPlayers();
+            showPropertyInfo(newPos);
+            updateTurnDisplay();
+        }
+
+        function calculateRent(property) {
+            if (property.type === 'railroad') {
+                const ownerRailroads = gameState.properties.filter(p => 
+                    p.owner === property.owner && p.type === 'railroad'
+                ).length;
+                return property.rent[ownerRailroads - 1] || 25;
+            } else if (property.type === 'utility') {
+                const ownerUtils = gameState.properties.filter(p => 
+                    p.owner === property.owner && p.type === 'utility'
+                ).length;
+                const diceTotal = gameState.dice[0] + gameState.dice[1];
+                return ownerUtils === 2 ? diceTotal * 10 : diceTotal * 4;
+            }
+            return property.rent[property.houses] || property.price;
+        }
+
+        function handleBankruptcy(playerIndex, ownerIndex) {
+            const player = gameState.players[playerIndex];
+            const owner = gameState.players[ownerIndex];
+
+            // Transfer properties
+            player.properties.forEach(propId => {
+                const prop = gameState.properties[propId];
+                prop.owner = ownerIndex;
+                owner.properties.push(propId);
+            });
+
+            owner.money += player.money;
+            player.money = 0;
+            player.properties = [];
+
+            addToLog(`${player.name} went bankrupt! All assets transferred to ${owner.name}`);
+            
+            if (playerIndex === 0) {
+                alert('Game Over! You went bankrupt!');
+                leaveGame();
+            }
+        }
+
+        function endTurn() {
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % 4;
+            
+            if (gameState.currentPlayer === 0) {
+                gameState.round++;
+                document.getElementById('roundCounter').textContent = `Round ${gameState.round}`;
+            }
+
+            gameState.diceRolled = false;
+            document.getElementById('rollBtn').disabled = false;
+            document.getElementById('endTurnBtn').disabled = true;
+            
+            renderPlayers();
+            updateTurnDisplay();
+            addToLog(`${gameState.players[gameState.currentPlayer].name}'s turn`);
+            
+            // Check if in jail
+            if (gameState.players[gameState.currentPlayer].inJail) {
+                handleJail();
+            }
+        }
+
+        function handleJail() {
+            addToLog(`${gameState.players[gameState.currentPlayer].name} is in jail`);
+            // Could add jail options here
+        }
+
+        // Property Info Display
+        function showPropertyInfo(propId) {
+            const prop = gameState.properties[propId];
+            const infoDiv = document.getElementById('propertyInfo');
+            
+            if (prop.type === 'corner' || prop.type === 'jail' || prop.type === 'parking' || 
+                prop.type === 'gotojail' || prop.type === 'chest' || prop.type === 'chance' || prop.type === 'tax') {
+                infoDiv.innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fas ${prop.icon}" style="font-size: 40px; color: #888; margin-bottom: 10px;"></i>
+                        <h3 style="margin-bottom: 10px;">${prop.name}</h3>
+                        <p style="color: #888;">${prop.type === 'tax' ? 'Pay tax when you land here' : 'Special space'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const owner = prop.owner !== null ? gameState.players[prop.owner].name : 'Available';
+            const ownerColor = prop.owner !== null ? gameState.players[prop.owner].color : '';
+            
+            let rentHtml = '<div class="rent-table">';
+            if (prop.rent) {
+                const labels = ['Base', '1 House', '2 Houses', '3 Houses', '4 Houses', 'Hotel'];
+                prop.rent.forEach((rent, i) => {
+                    rentHtml += `
+                        <div class="rent-row">
+                            <span>${labels[i]}</span>
+                            <span>$${rent}</span>
+                        </div>
+                    `;
+                });
+            }
+            rentHtml += '</div>';
+
+            let actions = '';
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+            
+            if (prop.owner === null && currentPlayer.money >= prop.price && gameState.diceRolled) {
+                actions += `<button class="prop-btn buy" onclick="buyProperty(${propId})">Buy $${prop.price}</button>`;
+            }
+            
+            if (prop.owner === gameState.currentPlayer) {
+                actions += `<button class="prop-btn sell" onclick="sellProperty(${propId})">Sell</button>`;
+                actions += `<button class="prop-btn mortgage" onclick="mortgageProperty(${propId})">Mortgage</button>`;
+            }
+
+            infoDiv.innerHTML = `
+                <div class="prop-header">
+                    <span class="prop-name">${prop.name}</span>
+                    <span class="prop-group">Group ${prop.group || ''}</span>
+                </div>
+                <div class="prop-price">$${prop.price}</div>
+                <div class="prop-owner">
+                    <strong>Owner:</strong> <span style="color: ${ownerColor}">${owner}</span>
+                </div>
+                ${rentHtml}
+                ${actions ? `<div class="prop-actions">${actions}</div>` : ''}
+            `;
+        }
+
+        function updatePropertyInfo(prop) {
+            if (prop === null) {
+                document.getElementById('propertyInfo').innerHTML = `
+                    <div style="text-align: center; color: #888;">
+                        Click on a property to view details
+                    </div>
+                `;
+            }
+        }
+
+        // Property Actions
+        function buyProperty(propId) {
+            const player = gameState.players[gameState.currentPlayer];
+            const prop = gameState.properties[propId];
+            
+            if (player.money >= prop.price) {
+                player.money -= prop.price;
+                prop.owner = gameState.currentPlayer;
+                player.properties.push(propId);
+                
+                addToLog(`${player.name} bought ${prop.name} for $${prop.price}`);
+                renderPlayers();
+                showPropertyInfo(propId);
+                renderBoard();
+            }
+        }
+
+        function sellProperty(propId) {
+            const player = gameState.players[gameState.currentPlayer];
+            const prop = gameState.properties[propId];
+            const sellPrice = Math.floor(prop.price * 0.5);
+            
+            player.money += sellPrice;
+            prop.owner = null;
+            player.properties = player.properties.filter(id => id !== propId);
+            
+            addToLog(`${player.name} sold ${prop.name} for $${sellPrice}`);
+            renderPlayers();
+            showPropertyInfo(propId);
+            renderBoard();
+        }
+
+        function mortgageProperty(propId) {
+            const player = gameState.players[gameState.currentPlayer];
+            const prop = gameState.properties[propId];
+            const mortgageValue = Math.floor(prop.price * 0.4);
+            
+            player.money += mortgageValue;
+            prop.mortgaged = true;
+            
+            addToLog(`${player.name} mortgaged ${prop.name} for $${mortgageValue}`);
+            renderPlayers();
+            showPropertyInfo(propId);
+        }
+
+        // Trade Functions
+        function openTradeModal() {
+            const modal = document.getElementById('tradeModal');
+            const select = document.getElementById('tradeWithPlayer');
+            
+            select.innerHTML = '<option value="">Select player to trade with</option>';
+            gameState.players.forEach((player, index) => {
+                if (index !== gameState.currentPlayer) {
+                    select.innerHTML += `<option value="${index}">${player.name}</option>`;
+                }
+            });
+
+            updateTradeProperties();
+            modal.classList.add('active');
+        }
+
+        function updateTradeProperties() {
+            const yourProps = document.getElementById('yourTradeProps');
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+            
+            yourProps.innerHTML = '';
+            currentPlayer.properties.forEach(propId => {
+                const prop = gameState.properties[propId];
+                yourProps.innerHTML += `
+                    <div style="padding: 8px; border-bottom: 1px solid #0f3460;">
+                        <input type="checkbox" class="your-prop" value="${propId}">
+                        ${prop.name} ($${prop.price})
+                    </div>
+                `;
+            });
+
+            const theirProps = document.getElementById('theirTradeProps');
+            const selectedPlayer = document.getElementById('tradeWithPlayer').value;
+            
+            if (selectedPlayer) {
+                const player = gameState.players[selectedPlayer];
+                theirProps.innerHTML = '';
+                player.properties.forEach(propId => {
+                    const prop = gameState.properties[propId];
+                    theirProps.innerHTML += `
+                        <div style="padding: 8px; border-bottom: 1px solid #0f3460;">
+                            <input type="checkbox" class="their-prop" value="${propId}">
+                            ${prop.name} ($${prop.price})
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function closeTradeModal() {
+            document.getElementById('tradeModal').classList.remove('active');
+        }
+
+        function sendTradeOffer() {
+            addToLog('Trade offer sent');
+            alert('Trade feature - In a real game, this would send an offer to the other player');
+            closeTradeModal();
+        }
+
+        // Action Log
+        function addToLog(message) {
+            gameState.actionLog.unshift(message);
+            if (gameState.actionLog.length > 10) {
+                gameState.actionLog.pop();
+            }
+
+            const logDiv = document.getElementById('actionLog');
+            logDiv.innerHTML = '<h3><i class="fas fa-history"></i> GAME LOG</h3>';
+            
+            gameState.actionLog.forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = entry;
+                logDiv.appendChild(logEntry);
+            });
+        }
+
+        function updateTurnDisplay() {
+            document.getElementById('turnIndicator').textContent = 
+                `${gameState.players[gameState.currentPlayer].name}'s turn`;
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !gameState.diceRolled) {
+                e.preventDefault();
+                rollDice();
+            } else if (e.code === 'Enter' && gameState.diceRolled) {
+                e.preventDefault();
+                endTurn();
+            }
+        });
+    </script>
+</body>
+</html>
